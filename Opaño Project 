@@ -1,0 +1,149 @@
+namespace BrigoleWpsApplicationProject
+{
+    public partial class MainWindow : Window
+    {
+        // declare the array storage
+        string[] names = new string[100];
+        string[] phones = new string[100];
+        string[] emails = new string[100];
+        string[] addresses = new string[100]; // NEW
+
+        char status = 'A';
+
+        int index = 0;
+        int updatedIndex = -1;
+
+        public MainWindow()
+        {
+            InitializeComponent();
+        }
+
+        private void btnSave_Click(object sender, RoutedEventArgs e)
+        {
+            string name = txtName.Text;
+            string phone = txtPhone.Text;
+            string email = txtEmail.Text;
+            string address = txtAddress.Text; // NEW
+
+            if (name == "" || phone == "" || email == "" || address == "")
+            {
+                MessageBox.Show("Please fill all fields", "Contact Manager", MessageBoxButton.OK);
+                return;
+            }
+
+            SaveData(name, phone, email, address);
+            ClearData();
+        }
+
+        private void ClearData()
+        {
+            txtName.Clear();
+            txtPhone.Clear();
+            txtEmail.Clear();
+            txtAddress.Clear(); // NEW
+        }
+
+        private void dataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            int index = dataGrid.SelectedIndex;
+
+            if (index >= 0)
+            {
+                txtName.Text = names[index];
+                txtPhone.Text = phones[index];
+                txtEmail.Text = emails[index];
+                txtAddress.Text = addresses[index]; // NEW
+
+                btnDeleteData.IsEnabled = true;
+
+                status = 'E';
+                updatedIndex = index;
+            }
+        }
+
+        private void SaveData(string n, string p, string e, string a)
+        {
+            if (status == 'A')
+            {
+                names[index] = n;
+                phones[index] = p;
+                emails[index] = e;
+                addresses[index] = a; // NEW
+
+                dataGrid.Items.Add(new
+                {
+                    Name = names[index],
+                    Phone = phones[index],
+                    Email = emails[index],
+                    Address = addresses[index] // NEW
+                });
+
+                index++;
+
+                MessageBox.Show("New contact added!", "Contact Manager", MessageBoxButton.OK);
+            }
+            else if (status == 'E' && updatedIndex >= 0)
+            {
+                names[updatedIndex] = n;
+                phones[updatedIndex] = p;
+                emails[updatedIndex] = e;
+                addresses[updatedIndex] = a; // NEW
+
+                RefreshGrid();
+
+                status = 'A';
+                updatedIndex = -1;
+
+                MessageBox.Show("Contact updated!", "Contact Manager", MessageBoxButton.OK);
+            }
+        }
+
+        private void btnDeleteData_Click(object sender, RoutedEventArgs e)
+        {
+            int deleteIndex = dataGrid.SelectedIndex;
+
+            if (deleteIndex == -1)
+            {
+                MessageBox.Show("Please select a contact to delete.");
+                return;
+            }
+
+            ShiftElements(deleteIndex);
+            index--;
+
+            RefreshGrid();
+
+            btnDeleteData.IsEnabled = false;
+            ClearData();
+
+            MessageBox.Show("Contact deleted!", "Contact Manager", MessageBoxButton.OK);
+        }
+
+        private void RefreshGrid()
+        {
+            dataGrid.Items.Clear();
+
+            for (int i = 0; i < index; i++)
+            {
+                dataGrid.Items.Add(new
+                {
+                    Name = names[i],
+                    Phone = phones[i],
+                    Email = emails[i],
+                    Address = addresses[i] // NEW
+                });
+            }
+        }
+
+        private void ShiftElements(int deletedIndex)
+        {
+            for (int i = deletedIndex; i < index - 1; i++) // FIXED
+            {
+                names[i] = names[i + 1];
+                phones[i] = phones[i + 1];
+                emails[i] = emails[i + 1];
+                addresses[i] = addresses[i + 1]; // NEW
+            }
+        }
+    }
+}
